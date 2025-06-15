@@ -1,8 +1,7 @@
-smolagents
-ollama
+smolagents ==1.2.2
 huggingface_hub
 litellm
-markdownify 
+markdownify
 duckduckgo-search
 transformers
 beautifulsoup4
