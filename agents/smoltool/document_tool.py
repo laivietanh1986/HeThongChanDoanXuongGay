@@ -18,4 +18,4 @@ def get_medical_document(query: str) -> str:
     print(f"Querying documents with: {query}")
     # Here you would implement the logic to query and retrieve documents
     # For now, we return a placeholder response
-    return f"sach Cuu Am chan kinh chapter 1."
+    return f"book name Cuu Am chan kinh chapter 1. the content of book is with the fracture in hand, the fracture position is thumb fracture. to the treatment is using ice , the recovery time will be 2 months ."

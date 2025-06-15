@@ -10,7 +10,7 @@ from smolagents import (
 
 )
 from agents.smoltool.radiology_tool import diagnose
-from agents.smoltool.document_tool import document_tool
+from agents.smoltool.document_tool import get_medical_document
 from smolagents import ManagedAgent
 import os
 
@@ -21,12 +21,12 @@ class MedicalAssistantFramework:
         self.log("Medical Assistant Framework initialized")
         load_dotenv()
         # Get API key from environment variables
-        # self.api_key = os.getenv("HF_TOKEN")
-        # # init the model
+        self.api_key = os.getenv("HF_TOKEN")
+        # init the model
 
-        # self.model = HfApiModel(model_id="meta-llama/Llama-3.3-70B-Instruct")
-        self.model = LiteLLMModel(model_id="gemini/gemini-2.0-flash-exp",
-                     api_key=os.getenv("GEMINI_API_KEY"))
+        self.model = HfApiModel(model_id="meta-llama/Llama-3.3-70B-Instruct")
+        # self.model = LiteLLMModel(model_id="gemini/gemini-2.0-flash-lite",
+        #              api_key=os.getenv("GEMINI_API_KEY"))
         self.radiology_agent = ToolCallingAgent(
             model=self.model,
             tools=[diagnose],
@@ -37,31 +37,23 @@ class MedicalAssistantFramework:
             agent=self.radiology_agent,
             description="got medical question and check and analyze radiology medical symbol.",
         )
-        # self.document_agent = CodeAgent(
-        #     model=self.model,
-        #     tools=[document_tool]
-        # )
-        # self.document_managed_agent = ManagedAgent(
-        #     name="Medical Document Managed Agent",
-        #     agent=self.document_agent,
-        #     description="query and retrieve medical documents, articles, and research papers.",
-        # )
+        self.document_agent = ToolCallingAgent(
+            model=self.model,
+            tools=[get_medical_document]
+        )
+        self.document_managed_agent = ManagedAgent(
+            name="super_medical_document_retriever",
+            agent=self.document_agent,
+            description="got infomation from radiology and using it to query and retrieve medical documents, articles, and research papers.",
+        )
         self.docter_agent = CodeAgent(
             tools = [],
             model=self.model,
-            managed_agents = [self.radiology_managed_agent],
+            managed_agents = [self.radiology_managed_agent,self.document_managed_agent],
             additional_authorized_imports=["re"],
 
-            # system_prompt="""{{authorized_imports}}
-            #   You are a medical doctor with expertise in diagnosing and treating various conditions.
-            #   If the user's question is not related to medical topics, answer it directly as a knowledgeable assistant.
-            #     You will be provided with patient symptoms and medical history, and your task is to provide a diagnosis and treatment plan.
-            #     you have access to the following agents:{{managed_agents_descriptions}}
-            #     If the user's question is medical in nature (e.g., about symptoms, diagnosis, or treatment)
-            #     1. First ask radiology_agent : for get medical advice.
-            #     3. Finally, provide a comprehensive response based on the information gathered.
 
-            # """
+
         )
     def doctor_agent_chat(self,message: str,history:str)-> str:
         """
@@ -84,7 +76,11 @@ class MedicalAssistantFramework:
         self.log("Chat initialization started")
         # gr.ChatInterface(fn=self.doctor_agent_chat, type="messages").launch()
         # GradioUI(self.docter_agent).launch()
-        self.docter_agent.run("I was in the rain for 2 hours yesterday, do I need to take medicine?")
+        self.docter_agent.run("you got question :the boy fell when running, this hand could not use, please check the status  ?" \
+        "1. first you should check the radiology symbol of the hand, and analyze it." \
+        "2. then you should query and retrieve medical documents, articles, and research papers about the hand fracture." \
+        "3. finally you should give the answer to the user, and must use the information from the medical document you are query .")
+
          # Initialize the Gradio UI
         self.log("Chat initialization completed")
 

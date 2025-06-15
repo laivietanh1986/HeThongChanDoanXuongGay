@@ -18,7 +18,7 @@ def diagnose(query:str) -> str:
         str: Insights or analysis of medical in text format.
     """
 
-    return f"you're very healthy ."
+    return f"this is the fracture in hand, the fracture position is thumb fracture."
 
 
 
