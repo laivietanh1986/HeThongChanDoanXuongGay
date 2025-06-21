@@ -9,8 +9,8 @@ from smolagents import (
     GradioUI
 
 )
-from agents.smoltool.radiology_tool import diagnose
-from agents.smoltool.document_tool import get_medical_document
+from agents.smoltool.radiology_tool import identify_bone_location, has_fracture,fracture_type
+from agents.smoltool.document_tool import retriever_tool
 from smolagents import ManagedAgent
 import os
 
@@ -29,7 +29,7 @@ class MedicalAssistantFramework:
         #              api_key=os.getenv("GEMINI_API_KEY"))
         self.radiology_agent = ToolCallingAgent(
             model=self.model,
-            tools=[diagnose],
+            tools=[identify_bone_location, has_fracture, fracture_type],
             max_steps=3
         )
         self.radiology_managed_agent = ManagedAgent(
@@ -39,7 +39,9 @@ class MedicalAssistantFramework:
         )
         self.document_agent = ToolCallingAgent(
             model=self.model,
-            tools=[get_medical_document]
+            tools=[retriever_tool],
+            max_steps=4,  # Limit the number of reasoning steps
+
         )
         self.document_managed_agent = ManagedAgent(
             name="super_medical_document_retriever",
@@ -55,17 +57,27 @@ class MedicalAssistantFramework:
 
 
         )
-    def doctor_agent_chat(self,message: str,history:str)-> str:
+    def doctor_agent_chat(self,file_path: str,message:str,another_param)-> str:
         """
         Function to handle chat messages with the doctor agent.
         """
+
+        self.log("another_param: {}".format(another_param))
+        self.log("file_path: {}".format(file_path))
+
         self.log(f"Received message: {message}")
         conversation = []
-        if history:
-            conversation.append(history)
+
         conversation.append({"role": "user", "content": message})
         self.log("Conversation history: {}".format(conversation))
-        result =  self.docter_agent.run(f"""{message}""")
+        # result =  self.docter_agent.run(f"""
+        # "you using the image from this you got question:{message} ?" \
+        # # "1. first you should check the radiology symbol of the hand, if this is hand we continue to check the fracture , type of fracture , and analyze it." \
+        # # "2. if this is not hand, please answer user that you are not responsibility for this case, you are only take care of hand bone ." \
+        # # "3. then you should query and retrieve medical documents, articles, and research papers about the hand fracture." \
+        # # "4. finally you should give the answer to the user, and must use the information from the medical document you are query ."
+        # """)
+        result = "okie"
         return result
 
 
@@ -76,10 +88,24 @@ class MedicalAssistantFramework:
         self.log("Chat initialization started")
         # gr.ChatInterface(fn=self.doctor_agent_chat, type="messages").launch()
         # GradioUI(self.docter_agent).launch()
-        self.docter_agent.run("you got question :the boy fell when running, this hand could not use, please check the status  ?" \
-        "1. first you should check the radiology symbol of the hand, and analyze it." \
-        "2. then you should query and retrieve medical documents, articles, and research papers about the hand fracture." \
-        "3. finally you should give the answer to the user, and must use the information from the medical document you are query .")
+        image_input = gr.Image(type="filepath",sources =["upload"], label="Upload X-ray Image")
+        message_input = gr.Textbox(label="Enter your question about the X-ray image")
+        history_input = gr.Textbox(label="Conversation History", visible=False)
+        output = gr.Textbox(label="Response from Medical Assistant")
+        gr.Interface(
+            fn=self.doctor_agent_chat,
+            inputs=[image_input,message_input, history_input],
+            outputs=output,
+            title="Medical Assistant Framework",
+            description="A framework to assist with medical questions and radiology analysis.",
+            theme="default",
+            allow_flagging="never",
+        ).launch(share=False)
+        # self.docter_agent.run("you using the image from this you got question:the boy fell when running, this hand is fracture , look like greenstick,  and could not use, please check the status  ?" \
+        # "1. first you should check the radiology symbol of the hand, if this is hand we continue to check the fracture , type of fracture , and analyze it." \
+        # "2. if this is not hand, please answer user that you are not responsibility for this case, you are only take care of hand bone ." \
+        # "3. then you should query and retrieve medical documents, articles, and research papers about the hand fracture." \
+        # "4. finally you should give the answer to the user, and must use the information from the medical document you are query .")
 
          # Initialize the Gradio UI
         self.log("Chat initialization completed")

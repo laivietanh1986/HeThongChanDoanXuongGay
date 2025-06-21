@@ -6,3 +6,9 @@ duckduckgo-search
 transformers
 beautifulsoup4
 requests
+langchain
+langchain-community
+sentence-transformers
+python-dotenv
+rank_bm25
+faiss-cpu

@@ -66,13 +66,13 @@ def has_fracture(description: str) -> bool:
 @tool
 def fracture_type(description: str) -> list:
     """
-    Identify the types of bone fracture described in the input.
+    Determines the type of fracture based on the provided description.
 
     Args:
-        description (str): Clinical or radiological text describing the fracture.
+        description: A sentence or phrase describing the shape of bone fracture.
 
     Returns:
-        list: List of detected fracture types (can include multiple).
+        str: The type of fracture identified.
     """
     description = description.lower()
 
@@ -96,21 +96,21 @@ def fracture_type(description: str) -> list:
             detected.append(ftype)
 
     return detected or ["unspecified"]
-@tool
-def detect_fracture_bboxes(image:str) -> str:
-    """
-    Detect bounding boxes for fractures in an X-ray image.
+# @tool
+# def detect_fracture_bboxes(image:np) -> str:
+#     """
+#     Detect bounding boxes for fractures in an X-ray image.
 
-    Args:
-        image (PIL.Image.Image): Input X-ray image.
-
-
-    Returns:
-        List[Tuple[int, int, int, int]]: List of bounding boxes in (x_min, y_min, x_max, y_max) format.
-    """
+#     Args:
+#         image (PIL.Image.Image): Input X-ray image.
 
 
-    return "Bounding boxes for fractures detected in the image: [(50, 50, 100, 100), (150, 150, 200, 200)]"
+#     Returns:
+#         List[Tuple[int, int, int, int]]: List of bounding boxes in (x_min, y_min, x_max, y_max) format.
+#     """
+
+
+#     return "Bounding boxes for fractures detected in the image: [(50, 50, 100, 100), (150, 150, 200, 200)]"
 
 
 
